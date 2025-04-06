@@ -1,4 +1,4 @@
-const CONFIG = {
+const CONFIG_SAMPLE = {
     OCTOPUS_EMAIL: "your.email@example.com",
     OCTOPUS_PASSWORD: "your_password",
     LINE_CHANNEL_ACCESS_TOKEN: 'your_line_token',

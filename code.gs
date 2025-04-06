@@ -1,5 +1,6 @@
 // ==== メイン関数 ====
 function main() {
+  // pushテスト
   const token = getOctopusToken();
   const accountNumber = getAccountNumber(token);
   const readings = getUsage(token, accountNumber);

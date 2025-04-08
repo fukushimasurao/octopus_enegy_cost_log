@@ -52,6 +52,7 @@ function sendLineViaMessagingAPI(date, kWh, yen) {
   const message =
     `✅ ${formattedDate} 電力使用量: ${kWh} kWh\n` +
     `💰 推定電気料金: ${yen} 円\n` +
+    `- - - - -` +
     `📊 月次集計 ${formattedStartDate}〜${formattedEndDate}\n` + // mm-dd形式に変更
     `🔌 合計使用量: ${totalKWh} kWh\n` +
     `💰 合計金額: ${totalCost} 円`;

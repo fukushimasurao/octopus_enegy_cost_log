@@ -41,19 +41,17 @@ function writeToSheet(date, kWh, yen) {
 
 // ==== LINE通知（月次集計付き） ====
 function sendLineViaMessagingAPI(date, kWh, yen) {
-  const formattedDate = Utilities.formatDate(date, 'Asia/Tokyo', 'MM-dd'); // mm-dd形式に変更
-
+  const formattedDate = Utilities.formatDate(date, 'Asia/Tokyo', 'MM月dd日');
   const { startDate, endDate } = getBillingRange(date);
-  const formattedStartDate = Utilities.formatDate(startDate, 'Asia/Tokyo', 'MM-dd'); // mm-dd形式に変更
-  const formattedEndDate = Utilities.formatDate(endDate, 'Asia/Tokyo', 'MM-dd'); // mm-dd形式に変更
-
+  const formattedStartDate = Utilities.formatDate(startDate, 'Asia/Tokyo', 'MM月dd日');
+  const formattedEndDate = Utilities.formatDate(endDate, 'Asia/Tokyo', 'MM月dd日');
   const { totalKWh, totalCost } = getMonthlySummary(startDate, endDate);
 
   const message =
-    `✅ ${formattedDate} 電力使用量: ${kWh} kWh\n` +
+    `✅ ${formattedDate} の合計電力使用量: ${kWh} kWh\n` +
     `💰 推定電気料金: ${yen} 円\n` +
-    `- - - - -\n` +
-    `📊 月次集計 ${formattedStartDate}〜${formattedEndDate}\n` + // mm-dd形式に変更
+    `- - - - - - - - - - - -\n` +
+    `📊 月次集計(${formattedStartDate}〜${formattedEndDate})\n` +
     `🔌 合計使用量: ${totalKWh} kWh\n` +
     `💰 合計金額: ${totalCost} 円`;
 
@@ -73,6 +71,7 @@ function sendLineViaMessagingAPI(date, kWh, yen) {
     muteHttpExceptions: true
   });
 }
+
 
 // ==== 月次範囲を求める ====
 function getBillingRange(date) {

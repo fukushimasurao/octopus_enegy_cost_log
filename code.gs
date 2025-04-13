@@ -243,3 +243,60 @@ function calculateTotals(readings) {
     estimatedCost: totalCost
   };
 }
+
+
+// ---------------------以下でバッグ用
+/**
+ * 引数にスタート日と終了日いれると、その間の使用量を再取得する。
+ */
+function runUpdateHistory() {
+  updateHistory("2025-04-10", "2025-04-10");
+}
+
+function safeGetOctopusToken(retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const token = getOctopusToken();
+      if (token) return token;
+    } catch (e) {
+      Logger.log(`⚠️ トークン取得失敗（${i + 1}回目）: ${e}`);
+    }
+    Utilities.sleep(3000); // 少し待ってから再試行
+  }
+  return null; // 失敗したまま
+}
+
+
+function updateHistory(fromDateStr, toDateStr) {
+  const from = new Date(fromDateStr);
+  const to = new Date(toDateStr);
+
+  while (from <= to) {
+    const dateStr = Utilities.formatDate(from, 'Asia/Tokyo', 'yyyy-MM-dd');
+    Logger.log(`🔄 ${dateStr} を更新中...`);
+
+    try {
+      const token = safeGetOctopusToken();
+      if (!token) {
+        Logger.log(`❌ ${dateStr} : トークン取得に失敗（スキップ）`);
+        from.setDate(from.getDate() + 1);
+        continue;
+      }
+
+      const accountNumber = getAccountNumber(token);
+      const readings = getUsageForDate(token, accountNumber, new Date(from));
+      const { totalKWh, estimatedCost } = calculateTotals(readings);
+
+      writeToSheet(new Date(from), totalKWh, estimatedCost);
+      Logger.log(`✅ ${dateStr} を更新しました → ${totalKWh} kWh / ${estimatedCost} 円`);
+
+    } catch (e) {
+      Logger.log(`❌ ${dateStr} の更新中にエラー: ${e}`);
+    }
+
+    from.setDate(from.getDate() + 1);
+    Utilities.sleep(3000); // 念のため待機
+  }
+
+  Logger.log("🏁 すべての更新が完了しました！");
+}

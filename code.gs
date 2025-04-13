@@ -299,3 +299,43 @@ function updateHistory(fromDateStr, toDateStr) {
 
   Logger.log("🏁 すべての更新が完了しました！");
 }
+
+function getUsageForDate(token, accountNumber, date) {
+  const from = new Date(date.getTime() - 9 * 60 * 60 * 1000); // JST → UTC
+  const to = new Date(from.getTime() + 24 * 60 * 60 * 1000 - 1000); // 翌日の00:00直前
+  const fromISO = from.toISOString();
+  const toISO = to.toISOString();
+
+  const payload = {
+    query: `
+      query halfHourlyReadings($accountNumber: String!, $fromDatetime: DateTime, $toDatetime: DateTime) {
+        account(accountNumber: $accountNumber) {
+          properties {
+            electricitySupplyPoints {
+              halfHourlyReadings(fromDatetime: $fromDatetime, toDatetime: $toDatetime) {
+                startAt
+                value
+              }
+            }
+          }
+        }
+      }`,
+    variables: {
+      accountNumber,
+      fromDatetime: fromISO,
+      toDatetime: toISO
+    }
+  };
+
+  const response = UrlFetchApp.fetch('https://api.oejp-kraken.energy/v1/graphql/', {
+    method: 'post',
+    contentType: 'application/json',
+    headers: {
+      Authorization: 'JWT ' + token
+    },
+    payload: JSON.stringify(payload)
+  });
+
+  const json = JSON.parse(response.getContentText());
+  return json.data.account.properties[0].electricitySupplyPoints[0].halfHourlyReadings;
+}

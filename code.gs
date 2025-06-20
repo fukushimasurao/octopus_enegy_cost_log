@@ -2,10 +2,10 @@
 function main() {
   const token = getOctopusToken();
   const accountNumber = getAccountNumber(token);
-  const readings = getUsage(token, accountNumber);
+  const jstDate = getYesterdayJST();
+  const readings = getUsage(token, accountNumber, jstDate);
   const { totalKWh, estimatedCost } = calculateTotals(readings);
 
-  const jstDate = getYesterdayJST();
   writeToSheet(jstDate, totalKWh, estimatedCost);
   sendLineViaMessagingAPI(jstDate, totalKWh, estimatedCost);
 }
@@ -201,11 +201,11 @@ function getAccountNumber(token) {
   return json.data.viewer.accounts[0].number;
 }
 
-function getUsage(token, accountNumber) {
-  const from = new Date(getYesterdayJST().getTime() - 9 * 60 * 60 * 1000);
-  const to = new Date(getTodayJST().getTime() - 9 * 60 * 60 * 1000);
+function getUsage(token, accountNumber, date) {
+  const from = new Date(date.getTime() - 9 * 60 * 60 * 1000);
+  const to = new Date(from.getTime() + 24 * 60 * 60 * 1000 - 1000);
   const fromISO = from.toISOString();
-  const toISO = new Date(to.getTime() - 1000).toISOString();
+  const toISO = to.toISOString();
 
   const payload = {
     query: `

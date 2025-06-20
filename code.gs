@@ -134,7 +134,7 @@ function formatJST(date) {
 // ==== 日付処理 ====
 function getYesterdayJST() {
   const now = new Date();
-  now.setDate(now.getDate() - 3);
+  now.setDate(now.getDate() - 2);
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 

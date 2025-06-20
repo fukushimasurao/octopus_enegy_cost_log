@@ -281,12 +281,22 @@ function calculateTotals(readings) {
   };
 }
 
-// ---------------------以下でバッグ用
+// ---------------------以下デバッグ用
 /**
  * 引数にスタート日と終了日いれると、その間の使用量を再取得する。
  */
 function runUpdateHistory() {
-  updateHistory("2025-04-10", "2025-04-10");
+  // 実行された日の7日前の日付を取得
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7); // 7日前の日付を設定
+  const formattedSevenDaysAgo = Utilities.formatDate(
+    sevenDaysAgo,
+    "Asia/Tokyo",
+    "yyyy-MM-dd"
+  );
+
+  Logger.log(`⚡️ 手動で ${formattedSevenDaysAgo} の使用量を取得します。`);
+  updateHistory(formattedSevenDaysAgo, formattedSevenDaysAgo);
 }
 
 function safeGetOctopusToken(retries = 3) {

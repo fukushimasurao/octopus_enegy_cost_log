@@ -286,17 +286,28 @@ function calculateTotals(readings) {
  * 引数にスタート日と終了日いれると、その間の使用量を再取得する。
  */
 function runUpdateHistory() {
-  // 実行された日の7日前の日付を取得
+  // 実行された日の7日前の日付を開始日とする
   const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7); // 7日前の日付を設定
-  const formattedSevenDaysAgo = Utilities.formatDate(
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const formattedStartDate = Utilities.formatDate(
     sevenDaysAgo,
     "Asia/Tokyo",
     "yyyy-MM-dd"
   );
 
-  Logger.log(`⚡️ 手動で ${formattedSevenDaysAgo} の使用量を取得します。`);
-  updateHistory(formattedSevenDaysAgo, formattedSevenDaysAgo);
+  // 実行された日の2日前の日付を終了日とする
+  const twoDaysAgo = new Date();
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  const formattedEndDate = Utilities.formatDate(
+    twoDaysAgo,
+    "Asia/Tokyo",
+    "yyyy-MM-dd"
+  );
+
+  Logger.log(
+    `⚡️ 手動で ${formattedStartDate} から ${formattedEndDate} までの使用量を取得・更新します。`
+  );
+  updateHistory(formattedStartDate, formattedEndDate);
 }
 
 function safeGetOctopusToken(retries = 3) {

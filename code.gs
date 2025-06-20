@@ -14,7 +14,7 @@ function main() {
 function writeToSheet(date, kWh, yen) {
   const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
   const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
-  const formattedDate = Utilities.formatDate(date, 'Asia/Tokyo', 'yyyy-MM-dd');
+  const formattedDate = Utilities.formatDate(date, "Asia/Tokyo", "yyyy-MM-dd");
 
   const lastRow = sheet.getLastRow();
   let targetRow = null;
@@ -24,7 +24,11 @@ function writeToSheet(date, kWh, yen) {
     for (let i = 0; i < dateValues.length; i++) {
       const cell = dateValues[i][0];
       if (!cell) continue;
-      const existingDate = Utilities.formatDate(new Date(cell), 'Asia/Tokyo', 'yyyy-MM-dd');
+      const existingDate = Utilities.formatDate(
+        new Date(cell),
+        "Asia/Tokyo",
+        "yyyy-MM-dd"
+      );
       if (existingDate === formattedDate) {
         targetRow = i + 1;
         break;
@@ -41,10 +45,18 @@ function writeToSheet(date, kWh, yen) {
 
 // ==== LINE通知（月次集計付き） ====
 function sendLineViaMessagingAPI(date, kWh, yen) {
-  const formattedDate = Utilities.formatDate(date, 'Asia/Tokyo', 'MM月dd日');
+  const formattedDate = Utilities.formatDate(date, "Asia/Tokyo", "MM月dd日");
   const { startDate, endDate } = getBillingRange(date);
-  const formattedStartDate = Utilities.formatDate(startDate, 'Asia/Tokyo', 'MM月dd日');
-  const formattedEndDate = Utilities.formatDate(endDate, 'Asia/Tokyo', 'MM月dd日');
+  const formattedStartDate = Utilities.formatDate(
+    startDate,
+    "Asia/Tokyo",
+    "MM月dd日"
+  );
+  const formattedEndDate = Utilities.formatDate(
+    endDate,
+    "Asia/Tokyo",
+    "MM月dd日"
+  );
   const { totalKWh, totalCost } = getMonthlySummary(startDate, endDate);
 
   const message =
@@ -55,23 +67,22 @@ function sendLineViaMessagingAPI(date, kWh, yen) {
     `🔌 合計使用量: ${totalKWh} kWh\n` +
     `💰 合計金額: ${totalCost} 円`;
 
-  const url = 'https://api.line.me/v2/bot/message/push';
+  const url = "https://api.line.me/v2/bot/message/push";
   const payload = {
     to: CONFIG.LINE_USER_ID,
-    messages: [{ type: 'text', text: message }]
+    messages: [{ type: "text", text: message }],
   };
 
   UrlFetchApp.fetch(url, {
-    method: 'post',
-    contentType: 'application/json',
+    method: "post",
+    contentType: "application/json",
     headers: {
-      Authorization: 'Bearer ' + CONFIG.LINE_CHANNEL_ACCESS_TOKEN
+      Authorization: "Bearer " + CONFIG.LINE_CHANNEL_ACCESS_TOKEN,
     },
     payload: JSON.stringify(payload),
-    muteHttpExceptions: true
+    muteHttpExceptions: true,
   });
 }
-
 
 // ==== 月次範囲を求める ====
 function getBillingRange(date) {
@@ -92,14 +103,16 @@ function getBillingRange(date) {
 
 // ==== 月次集計（スプレッドシート読み込み） ====
 function getMonthlySummary(startDate, endDate) {
-  const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(CONFIG.SHEET_NAME);
+  const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(
+    CONFIG.SHEET_NAME
+  );
   const lastRow = sheet.getLastRow();
   const records = sheet.getRange(1, 1, lastRow, 3).getValues();
 
   let totalKWh = 0;
   let totalCost = 0;
 
-  records.forEach(row => {
+  records.forEach((row) => {
     const rowDate = new Date(row[0]);
     if (rowDate >= startDate && rowDate <= endDate) {
       totalKWh += parseFloat(row[1]) || 0;
@@ -109,19 +122,19 @@ function getMonthlySummary(startDate, endDate) {
 
   return {
     totalKWh: parseFloat(totalKWh.toFixed(1)),
-    totalCost: parseFloat(totalCost.toFixed(2))
+    totalCost: parseFloat(totalCost.toFixed(2)),
   };
 }
 
 // ==== フォーマット補助 ====
 function formatJST(date) {
-  return Utilities.formatDate(date, 'Asia/Tokyo', 'yyyy/MM/dd');
+  return Utilities.formatDate(date, "Asia/Tokyo", "yyyy/MM/dd");
 }
 
 // ==== 日付処理 ====
 function getYesterdayJST() {
   const now = new Date();
-  now.setDate(now.getDate() - 1);
+  now.setDate(now.getDate() - 3);
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
@@ -142,16 +155,19 @@ function getOctopusToken() {
     variables: {
       input: {
         email: CONFIG.OCTOPUS_EMAIL,
-        password: CONFIG.OCTOPUS_PASSWORD
-      }
-    }
+        password: CONFIG.OCTOPUS_PASSWORD,
+      },
+    },
   };
 
-  const response = UrlFetchApp.fetch('https://api.oejp-kraken.energy/v1/graphql/', {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify(payload)
-  });
+  const response = UrlFetchApp.fetch(
+    "https://api.oejp-kraken.energy/v1/graphql/",
+    {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(payload),
+    }
+  );
 
   const json = JSON.parse(response.getContentText());
   return json.data.obtainKrakenToken.token;
@@ -166,17 +182,20 @@ function getAccountNumber(token) {
             number
           }
         }
-      }`
+      }`,
   };
 
-  const response = UrlFetchApp.fetch('https://api.oejp-kraken.energy/v1/graphql/', {
-    method: 'post',
-    contentType: 'application/json',
-    headers: {
-      Authorization: 'JWT ' + token
-    },
-    payload: JSON.stringify(payload)
-  });
+  const response = UrlFetchApp.fetch(
+    "https://api.oejp-kraken.energy/v1/graphql/",
+    {
+      method: "post",
+      contentType: "application/json",
+      headers: {
+        Authorization: "JWT " + token,
+      },
+      payload: JSON.stringify(payload),
+    }
+  );
 
   const json = JSON.parse(response.getContentText());
   return json.data.viewer.accounts[0].number;
@@ -205,27 +224,31 @@ function getUsage(token, accountNumber) {
     variables: {
       accountNumber,
       fromDatetime: fromISO,
-      toDatetime: toISO
-    }
+      toDatetime: toISO,
+    },
   };
 
-  const response = UrlFetchApp.fetch('https://api.oejp-kraken.energy/v1/graphql/', {
-    method: 'post',
-    contentType: 'application/json',
-    headers: {
-      Authorization: 'JWT ' + token
-    },
-    payload: JSON.stringify(payload)
-  });
+  const response = UrlFetchApp.fetch(
+    "https://api.oejp-kraken.energy/v1/graphql/",
+    {
+      method: "post",
+      contentType: "application/json",
+      headers: {
+        Authorization: "JWT " + token,
+      },
+      payload: JSON.stringify(payload),
+    }
+  );
 
   const json = JSON.parse(response.getContentText());
-  return json.data.account.properties[0].electricitySupplyPoints[0].halfHourlyReadings;
+  return json.data.account.properties[0].electricitySupplyPoints[0]
+    .halfHourlyReadings;
 }
 
 // ==== 合計と金額計算 ====
 function calculateTotals(readings) {
   let total = 0;
-  readings.forEach(r => total += parseFloat(r.value));
+  readings.forEach((r) => (total += parseFloat(r.value)));
 
   let energyCost = 0;
   if (total <= 120) {
@@ -239,10 +262,9 @@ function calculateTotals(readings) {
   const totalCost = Math.round((energyCost + 29.1) * 100) / 100;
   return {
     totalKWh: parseFloat(total.toFixed(2)),
-    estimatedCost: totalCost
+    estimatedCost: totalCost,
   };
 }
-
 
 // ---------------------以下でバッグ用
 /**
@@ -265,13 +287,12 @@ function safeGetOctopusToken(retries = 3) {
   return null; // 失敗したまま
 }
 
-
 function updateHistory(fromDateStr, toDateStr) {
   const from = new Date(fromDateStr);
   const to = new Date(toDateStr);
 
   while (from <= to) {
-    const dateStr = Utilities.formatDate(from, 'Asia/Tokyo', 'yyyy-MM-dd');
+    const dateStr = Utilities.formatDate(from, "Asia/Tokyo", "yyyy-MM-dd");
     Logger.log(`🔄 ${dateStr} を更新中...`);
 
     try {
@@ -287,8 +308,9 @@ function updateHistory(fromDateStr, toDateStr) {
       const { totalKWh, estimatedCost } = calculateTotals(readings);
 
       writeToSheet(new Date(from), totalKWh, estimatedCost);
-      Logger.log(`✅ ${dateStr} を更新しました → ${totalKWh} kWh / ${estimatedCost} 円`);
-
+      Logger.log(
+        `✅ ${dateStr} を更新しました → ${totalKWh} kWh / ${estimatedCost} 円`
+      );
     } catch (e) {
       Logger.log(`❌ ${dateStr} の更新中にエラー: ${e}`);
     }
@@ -323,19 +345,23 @@ function getUsageForDate(token, accountNumber, date) {
     variables: {
       accountNumber,
       fromDatetime: fromISO,
-      toDatetime: toISO
-    }
+      toDatetime: toISO,
+    },
   };
 
-  const response = UrlFetchApp.fetch('https://api.oejp-kraken.energy/v1/graphql/', {
-    method: 'post',
-    contentType: 'application/json',
-    headers: {
-      Authorization: 'JWT ' + token
-    },
-    payload: JSON.stringify(payload)
-  });
+  const response = UrlFetchApp.fetch(
+    "https://api.oejp-kraken.energy/v1/graphql/",
+    {
+      method: "post",
+      contentType: "application/json",
+      headers: {
+        Authorization: "JWT " + token,
+      },
+      payload: JSON.stringify(payload),
+    }
+  );
 
   const json = JSON.parse(response.getContentText());
-  return json.data.account.properties[0].electricitySupplyPoints[0].halfHourlyReadings;
+  return json.data.account.properties[0].electricitySupplyPoints[0]
+    .halfHourlyReadings;
 }

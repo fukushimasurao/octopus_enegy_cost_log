@@ -202,8 +202,23 @@ function getAccountNumber(token) {
 }
 
 function getUsage(token, accountNumber, date) {
-  const from = new Date(date.getTime() - 9 * 60 * 60 * 1000);
-  const to = new Date(from.getTime() + 24 * 60 * 60 * 1000 - 1000);
+  // dateはgetYesterdayJST()から渡されるJSTでの日付（例: 2024/07/20 00:00:00 JST）
+  // そのJST日付の00:00:00をUTC時刻に変換
+  const from = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), -9)
+  ); // JSTの0時をUTCに変換
+  // 翌日のJST日付の00:00:00をUTC時刻に変換し、そこから1秒引く
+  const nextDayJST = new Date(date);
+  nextDayJST.setDate(nextDayJST.getDate() + 1);
+  const to = new Date(
+    Date.UTC(
+      nextDayJST.getFullYear(),
+      nextDayJST.getMonth(),
+      nextDayJST.getDate(),
+      -9
+    ) - 1
+  ); // 翌日のJST0時をUTCに変換して-1ms
+
   const fromISO = from.toISOString();
   const toISO = to.toISOString();
 
@@ -323,8 +338,21 @@ function updateHistory(fromDateStr, toDateStr) {
 }
 
 function getUsageForDate(token, accountNumber, date) {
-  const from = new Date(date.getTime() - 9 * 60 * 60 * 1000); // JST → UTC
-  const to = new Date(from.getTime() + 24 * 60 * 60 * 1000 - 1000); // 翌日の00:00直前
+  const from = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), -9)
+  ); // JSTの0時をUTCに変換
+  // 翌日のJST日付の00:00:00をUTC時刻に変換し、そこから1秒引く
+  const nextDayJST = new Date(date);
+  nextDayJST.setDate(nextDayJST.getDate() + 1);
+  const to = new Date(
+    Date.UTC(
+      nextDayJST.getFullYear(),
+      nextDayJST.getMonth(),
+      nextDayJST.getDate(),
+      -9
+    ) - 1
+  ); // 翌日のJST0時をUTCに変換して-1ms
+
   const fromISO = from.toISOString();
   const toISO = to.toISOString();
 
